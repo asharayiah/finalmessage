@@ -2,44 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>The Pulse of the Hour</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Final Message</title>
+  <!-- Inter Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    function switchLanguage(lang) {
-      window.location.href = lang;
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
     }
   </script>
 </head>
-<body class="bg-black text-yellow-400 font-serif">
-  <div class="max-w-4xl mx-auto p-6 mt-10 bg-black">
+<body class="bg-black text-yellow-400 font-sans">
+  <div class="max-w-4xl mx-auto p-6 mt-4 bg-black">
 
     <!-- Hijri + Gregorian Date -->
-    <div class="text-left text-sm text-yellow-300 mb-4">
-      Monday, 11 Muharram 1447 AH &nbsp; | 4 August 2025
-    </div>
-
+    <div class="flex justify-between items-center mb-1 text-sm text-gold-400 h-4">
+      <!-- Hijri & Gregorian Date -->
+      <div class="text-left text-sm text-yellow-300 mb-8">
+         Monday, 11 Muharram 1447 AH &nbsp; | 4 August 2025
+      </div>
     <!-- Language Switcher -->
-    <div class="flex justify-end mb-6">
-      <select onchange="switchLanguage(this.value)" class="p-2 bg-black border border-yellow-400 rounded text-yellow-400">
-        <option value="index_en.html" selected>English</option>
-        <option value="index_ar.html">العربية</option>
-        <option value="index_ru.html">Русский</option>
-        <option value="index_zh.html">中文</option>
+      <div class="text-left text-sm text-yellow-300 mb-8">
+      <select onchange="switchLanguage(this.value)" class="p-1 px-2 border border-gold-400 rounded text-xs bg-black text-gold-400 leading-tight">
+        <option value="index_en.html" id="lang-en" selected>English</option>
+        <option value="index_ar.html" id="lang-ar">العربية</option>
+        <option value="index_ru.html" id="lang-ru">Русский</option>
+        <option value="index_zh.html" id="lang-zh">中文</option>
       </select>
+      <script>
+        function switchLanguage(lang) {
+          window.location.href = lang + "";
+        }
+      </script>
     </div>
-
+  </div>
     <!-- Title -->
     <h1 class="text-4xl font-bold text-center mb-8">The Pulse of the Hour</h1>
 
-    <!-- Jesus Image -->
-    <div class="text-center mb-8">
-      <img src="jesus-weeping-israel-gaza.png" alt="Jesus weeping over Gaza" class="mx-auto w-2/3 md:w-1/2 rounded shadow-lg" />
-    </div>
+   <div class="text-center mb-6">
+     <img src="hero.png" alt="Final Message Hero Logo" class="mx-auto w-24 h-24 rounded-full shadow-md" />
+  </div>
+  <div class="text-center text-xl text-gold-319:21 04/08/202500 font-medium mt-4">
+    <p>When the spirit speaks, time obeys<br>When the children cry, truth answers</p>
+    <p class="text-sm mt-2 text-gold-400 italic">This is not science. Not politics. This is the Pulse of the Hour...</p>
+  </div>
+
+   <!-- Jesus Image -->
+   <div class="text-center mt-4 mb-4">
+     <img src="jesus-weeping-israel-gaza.png" alt="Jesus weeping" class="mx-auto w-2/3 md:w-1/3 rounded shadow-lg" />
+   </div>
 
     <!-- Main Message -->
     <div class="space-y-5 leading-relaxed text-lg">
-      <p><strong>In the name of God — Lord of Time, Creator of the seen and the unseen.</strong></p>
+      <p class="text-2xl font-semibold mb-4"><strong>In the Name of God—the Lord of Time, Creator of the Seen and Unseen.</strong></p>
       <p>This is not a scientific paper. Not a political statement. Not a religious sermon.</p>
       <p>This is a cry from one to whom a truth has been revealed — because children are being slaughtered, and the world remains silent.</p>
       <p>The screams of Gaza may not reach your ears, but they are recorded. Not in books. Not in footage. But in the essence of reality itself — every breath, every injustice, leaves a mark.</p>

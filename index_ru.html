@@ -4,42 +4,65 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Пульс Часа</title>
+  <!-- Inter Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    function switchLanguage(lang) {
-      window.location.href = lang;
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
     }
   </script>
 </head>
-<body class="bg-black text-yellow-400 font-serif">
-  <div class="max-w-4xl mx-auto p-6 mt-10 bg-black">
-    
-    <!-- Hijri + Gregorian Date -->
-    <div class="text-left text-sm text-yellow-300 mb-4">
-Понеделок, 11 мухаррам 1447 года хиджры | 4 августа 2025 года
-    </div>
+<body class="bg-black text-yellow-400 font-sans">
+  <div class="max-w-4xl mx-auto p-6 mt-4 bg-black">
 
+    <!-- Hijri + Gregorian Date -->
+    <div class="flex justify-between items-center mb-1 text-sm text-gold-400 h-4">
+      <!-- Hijri & Gregorian Date -->
+      <div class="text-left text-sm text-yellow-300 mb-8">
+      Понеделок, 11 мухаррам 1447 года хиджры | 4 августа 2025 года
+    </div>
     <!-- Language Switcher -->
-    <div class="flex justify-end mb-6">
-      <select id="langSwitcher" onchange="switchLanguage(this.value)" class="p-2 bg-black border border-yellow-400 rounded text-yellow-400">
+      <div class="text-left text-sm text-yellow-300 mb-8">
+      <select onchange="switchLanguage(this.value)" class="p-1 px-2 border border-gold-400 rounded text-xs bg-black text-gold-400 leading-tight">
         <option value="index_en.html">English</option>
         <option value="index_ar.html">العربية</option>
         <option value="index_ru.html" selected>Русский</option>
         <option value="index_zh.html">中文</option>
       </select>
+      <script>
+        function switchLanguage(lang) {
+          window.location.href = lang + "";
+        }
+      </script>
     </div>
-
+  </div>
     <!-- Title -->
     <h1 class="text-4xl font-bold text-center mb-8">Пульс Часа</h1>
 
-    <!-- Jesus Image -->
-    <div class="text-center mb-8">
-      <img src="jesus-weeping-israel-gaza.png" alt="Иисус плачет по Газе" class="mx-auto w-2/3 md:w-1/2 rounded shadow-lg" />
-    </div>
+   <div class="text-center mb-6">
+     <img src="hero.png" alt="Final Message Hero Logo" class="mx-auto w-24 h-24 rounded-full shadow-md" />
+  </div>
+  <div class="text-center text-xl text-gold-319:21 04/08/202500 font-medium mt-4">
+    <p>Когда дух говорит, время подчиняется<br>Когда дети плачут, истина отвечает</p>
+    <p class="text-sm mt-2 text-gold-400 italic">Это не наука. Не политика. Это Пульс Часа...</p>
+  </div>
+
+   <!-- Jesus Image -->
+   <div class="text-center mt-4 mb-4">
+     <img src="jesus-weeping-israel-gaza.png" alt="Jesus weeping" class="mx-auto w-2/3 md:w-1/3 rounded shadow-lg" />
+   </div>
 
     <!-- Main Body -->
     <div class="space-y-5 leading-relaxed text-lg">
-      <p><strong>Во имя Аллаха — Владыки Времени, Творца видимого и сокровенного.</strong></p>
+      <p class="text-2xl font-semibold mb-4"><strong>Во имя Аллаха — Владыки Времени, Творца видимого и сокровенного.</strong></p>
       <p>Это не научное заявление. Не политический манифест. И не религиозная проповедь.</p>
       <p>Это зов человека, которому раскрыта глубинная истина — потому что детей убивают, а мир молчит.</p>
       <p>Крики Газы не достигли ваших ушей. Но они записаны. Не в книгах, не в фильмах — а в самой ткани реальности.</p>

@@ -23,8 +23,14 @@
 <body class="bg-black text-yellow-400 font-sans">
   <div class="max-w-4xl mx-auto p-6 mt-4 bg-black">
 
+    <!-- Hijri + Gregorian Date -->
+    <div class="flex justify-between items-center mb-1 text-sm text-gold-400 h-4">
+      <!-- Hijri & Gregorian Date -->
+      <div class="text-left text-sm text-yellow-300 mb-8">
+	الاثنين، 11 محرّم 1447 هـ &nbsp; | 4 أغسطس 2025
+    </div>
     <!-- Language Switcher -->
-      <div class="text-right text-sm text-yellow-300 mb-8">
+      <div class="text-left text-sm text-yellow-300 mb-8">
       <select onchange="switchLanguage(this.value)" class="p-1 px-2 border border-gold-400 rounded text-xs bg-black text-gold-400 leading-tight">
         <option value="index_en.html">English</option>
         <option value="index_ar.html" selected>العربية</option>
@@ -36,12 +42,6 @@
           window.location.href = lang + "";
         }
       </script>
-    </div>
-    <!-- Hijri + Gregorian Date -->
-    <div class="flex justify-between items-center mb-1 text-sm text-gold-400 h-4">
-      <!-- Hijri & Gregorian Date -->
-      <div class="text-left text-sm text-yellow-300 mb-8">
-	الاثنين، 11 محرّم 1447 هـ &nbsp; | 4 أغسطس 2025
     </div>
   </div>
     <!-- Title -->
@@ -93,5 +93,6 @@
   </div>
 </body>
 </html>
+
 
 

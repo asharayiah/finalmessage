@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="favicon.png">
   <title>时代的脉动</title>
   <!-- Inter Font -->
@@ -22,47 +22,36 @@
   </script>
 </head>
 <body class="bg-black text-yellow-400 font-sans">
-  <div class="max-w-4xl mx-auto p-6 mt-4 bg-black">
-
-    <!-- Hijri + Gregorian Date -->
-    <div class="flex justify-between items-center mb-1 text-sm text-gold-400 h-4">
-      <!-- Hijri & Gregorian Date -->
-      <div class="text-left text-sm text-yellow-300 mb-8">
-      1447年穆哈拉姆月11日，星期一 | 2025年8月4日
+  <div class="max-w-4xl mx-auto p-2 mt-4 bg-black">
+      <div class="flex justify-between items-center pt-0 mb-4 text-sm text-gold-400 h-0">
+        <div class="flex items-center space-x-1">
+           <img src="favicon.png" alt="icon" class="w-6 h-6 self-center" />
+           <p class="text-sm text-gold-400">1447年穆哈拉姆月11日，星期一 | 2025年8月4日</p>
+        </div>
+        <div class="flex items-center space-x-1">
+          <select onchange="switchLanguage(this.value)" class="p-1 px-2 border border-gold-400 rounded text-xs bg-black text-gold-400 leading-tight">
+            <option value="index_en.html">English</option>
+            <option value="index_ar.html">العربية</option>
+            <option value="index_ru.html">Русский</option>
+            <option value="index_zh.html" selected>中文</option>
+          </select>
+          <script>
+            function switchLanguage(lang) {window.location.href = lang + "";}
+          </script>
+        </div>
+     </div>
+     <h1 class="text-4xl font-bold text-center mb-1">时代的脉动</h1>
+     <div class="text-center mb-2">
+       <img src="hero.png" alt="Final Message Hero Logo" class="mx-auto w-24 h-24 rounded-full shadow-md" />
+     </div>
+     <div class="text-center text-xl text-gold-319:21 04/08/202500 font-medium mt-4">
+       <p>当灵魂说话时，时间听从<br>孩子们哭的时候，真相回应</p>
+       <p class="text-sm mt-2 text-gold-400 italic">这不是科学，也不是政治。这是时代的脉搏。。。</p>
     </div>
-    <!-- Language Switcher -->
-      <div class="text-left text-sm text-yellow-300 mb-8">
-      <select onchange="switchLanguage(this.value)" class="p-1 px-2 border border-gold-400 rounded text-xs bg-black text-gold-400 leading-tight">
-        <option value="index_en.html">English</option>
-        <option value="index_ar.html">العربية</option>
-        <option value="index_ru.html">Русский</option>
-        <option value="index_zh.html" selected>中文</option>
-      </select>
-      <script>
-        function switchLanguage(lang) {
-          window.location.href = lang + "";
-        }
-      </script>
-    </div>
-  </div>
-    <!-- Title -->
-    <h1 class="text-4xl font-bold text-center mb-8">时代的脉动</h1>
-
-   <div class="text-center mb-6">
-     <img src="hero.png" alt="Final Message Hero Logo" class="mx-auto w-24 h-24 rounded-full shadow-md" />
-  </div>
-  <div class="text-center text-xl text-gold-319:21 04/08/202500 font-medium mt-4">
-    <p>当灵魂说话时，时间听从<br>孩子们哭的时候，真相回应</p>
-    <p class="text-sm mt-2 text-gold-400 italic">这不是科学，也不是政治。这是时代的脉搏。。。</p>
-  </div>
-
-   <!-- Jesus Image -->
-   <div class="text-center mt-4 mb-4">
+    <div class="text-center mt-2 mb-2">
      <img src="jesus-weeping-israel-gaza.png" alt="Jesus weeping" class="mx-auto w-2/3 md:w-1/3 rounded shadow-lg" />
-   </div>
-
-    <!-- Main Message -->
-    <div class="space-y-5 leading-relaxed text-lg">
+    </div>
+    <div class="max-w-4xl mx-auto px-4 mt-6">
       <p class="text-2xl font-semibold mb-4"><strong>以真主之名 —— 掌管时间者，显与隐之创造者。</strong></p>
       <p>这不是一篇科学报告，也不是政治宣言，更不是宗教布道。</p>
       <p>这是一个被揭示真理之人的呐喊 —— 因为孩子们正在被屠杀，而世界却沉默无声。</p>
@@ -87,7 +76,7 @@
 
     <!-- Infographic -->
     <div class="mt-10 text-center">
-      <img src="zion_en.png" alt="伪装的犹太物理学与神圣秩序" class="mx-auto w-1/3 rounded-lg shadow-lg" />
+      <img src="zion_en.png" alt="伪装的犹太物理学与神圣秩序" class="mx-auto w-1/2 rounded-lg shadow-lg" />
     </div>
 
     <!-- Signature -->
@@ -95,6 +84,3 @@
   </div>
 </body>
 </html>
-
-
-

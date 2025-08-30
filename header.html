@@ -1,0 +1,41 @@
+<!-- =============================
+File: /partials/header.html (copy into your project or paste directly into each page)
+============================= -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FinalMessage</title>
+  <style>
+    :root{--ink:#e6e7ea;--muted:#a3a7ad;--bg:#0b0d11;--panel:rgba(17,20,26,.65);--border:rgba(255,255,255,.08);--brand:#3aa0ff}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    a{color:var(--brand);text-decoration:none}
+    a:hover{text-decoration:underline}
+    header.site{position:sticky;top:0;background:rgba(11,13,17,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:100;padding:10px 16px}
+    .bar{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:18px}
+    .brand{font-weight:800;letter-spacing:.4px}
+    nav ul{display:flex;gap:14px;list-style:none;margin:0;padding:0}
+    nav a{padding:6px 10px;border-radius:8px}
+    nav a.active, nav a:focus{background:rgba(255,255,255,.08)}
+    main{max-width:1200px;margin:0 auto;padding:18px}
+    footer.site{border-top:1px solid var(--border);padding:14px 18px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header class="site">
+    <div class="bar">
+      <div class="brand">FinalMessage</div>
+      <nav aria-label="Waves">
+        <ul>
+          <li><a href="/index.html">Waves</a></li>
+          <li><a href="/wave07/index.html" class="active">CMB</a></li>
+          <li><a href="/ai/index.html">AI</a></li>
+          <li><a href="/healing/index.html">Healing</a></li>
+        </ul>
+      </nav>
+      <div style="margin-left:auto;opacity:.85">Multilingual ▾ (placeholders)</div>
+    </div>
+  </header>
+  <main>
+<!-- [PAGE CONTENT START] -->

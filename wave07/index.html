@@ -186,45 +186,100 @@
       $('#starCount').oninput=e=>{ starCount=parseInt(e.target.value,10); buildStars(); };
 
       // ---- Robust Recorder ----
+      // ---- Robust Recorder (diagnostic + test) ----
+      const $ = s=>document.querySelector(s);
       const btnRec = $('#btnRecord'), btnDL = $('#btnDownload'), recStatus = $('#recStatus');
       const canvas = renderer.domElement;
-      let recorder = null, chunks = [], lastBlobUrl = null, lastMime = null;
+
+      // Add two helper buttons in the UI panel
+      const testBtn = document.createElement('button'); testBtn.id='btnTest5'; testBtn.textContent='Test 5s Recording';
+      const forceBtn = document.createElement('button'); forceBtn.id='btnForce'; forceBtn.textContent='Force Finalize';
+      document.getElementById('ui').appendChild(testBtn);
+      document.getElementById('ui').appendChild(forceBtn);
+
+      let recorder = null, chunks = [], lastBlobUrl = null, lastMime = null, bytes = 0, chunkCount = 0;
 
       function pickMime(){
-        const c = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
-        for (const m of c){ if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m; }
+        const candidates = [
+          'video/webm;codecs=vp9', // try vp9 first
+          'video/webm;codecs=vp8',
+          'video/webm'
+        ];
+        for (const m of candidates){
+          if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m;
+        }
         return '';
       }
-      function downloadBlobUrl(url,name){ const a=Object.assign(document.createElement('a'),{href:url,download:name}); document.body.appendChild(a); a.click(); a.remove(); }
-      function setStatus(t){ recStatus.textContent=t; }
-      function enableDownload(url){ lastBlobUrl=url; btnDL.disabled=false; btnDL.onclick=()=>downloadBlobUrl(lastBlobUrl,'stream_of_waves.webm'); }
+      function humanBytes(n){ if(!n) return '0 B'; const u=['B','KB','MB','GB']; let i=0; while(n>=1024 && i<u.length-1){ n/=1024;i++; } return n.toFixed(1)+' '+u[i]; }
+      function setStatus(t){ recStatus.textContent = t; }
+      function enableDownload(url){
+        lastBlobUrl = url;
+        btnDL.disabled = false;
+        btnDL.onclick = () => {
+          const a = Object.assign(document.createElement('a'), { href: url, download: 'stream_of_waves.webm' });
+          document.body.appendChild(a); a.click(); a.remove();
+        };
+      }
 
+      function startRecorder(){
+        if (!canvas.captureStream) {
+          setStatus('captureStream unsupported (use Chrome/Edge, open via HTTP).');
+          alert('Your browser/page mode may block canvas capture.\nUse Chrome/Edge and open via http://localhost/ or GitHub Pages.');
+          return false;
+        }
+        const stream = canvas.captureStream(30);
+        const mime = pickMime();
+        if (!mime) {
+          setStatus('No WebM codec supported (Safari?).');
+          alert('No supported WebM codec. Try Chrome/Edge on Windows.');
+          return false;
+        }
+        lastMime = mime;
+        chunks = []; bytes = 0; chunkCount = 0;
+        // 1.2–1.5 Mbps keeps files small for GitHub Pages
+        recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1_400_000 });
+
+        recorder.ondataavailable = e => {
+          if (e.data && e.data.size) {
+            chunks.push(e.data);
+            bytes += e.data.size;
+            chunkCount++;
+            setStatus(`Recording… chunks=${chunkCount}, ${humanBytes(bytes)}`);
+          }
+        };
+        recorder.onerror = e => { console.error(e); setStatus('Recorder error (see console).'); };
+
+        recorder.onstop = () => {
+          try {
+            const blob = new Blob(chunks, { type: lastMime || 'video/webm' });
+            if (!blob.size) { setStatus('No data captured. Try “Test 5s Recording”.'); return; }
+            const url  = URL.createObjectURL(blob);
+            enableDownload(url);
+            // Auto-download once (some browsers may block popups)
+            const a = Object.assign(document.createElement('a'), { href: url, download: 'stream_of_waves.webm' });
+            document.body.appendChild(a); a.click(); a.remove();
+            setStatus(`Saved ${humanBytes(blob.size)}. Use “Download Last Recording” if needed.`);
+          } finally {
+            recorder = null;
+            btnRec.textContent = 'Start Recording';
+          }
+        };
+
+        // Emit a chunk every second so we see progress
+        recorder.start(1000);
+        btnRec.textContent = 'Stop Recording';
+        setStatus('Recording… chunks=0, 0 B');
+        return true;
+      }
+
+      // Start/Stop toggle
       btnRec.onclick = () => {
         try {
           if (!recorder) {
-            if (!canvas.captureStream) { setStatus('Recording not supported here. Use Chrome/Edge or HTTP.'); alert('Use Chrome/Edge and open via http://localhost/.'); return; }
-            const stream = canvas.captureStream(30);
-            const mime = pickMime(); if(!mime){ setStatus('No WebM codec supported. Try Chrome/Edge.'); alert('No supported WebM codec.'); return; }
-            lastMime = mime; chunks = [];
-            recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1_400_000 }); // ~<25MB for ~2–3 min
-            recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-            recorder.onerror = e => { console.error(e); setStatus('Recorder error (see console)'); };
-            recorder.onstop = () => {
-              try {
-                const blob = new Blob(chunks, { type: lastMime || 'video/webm' });
-                const url  = URL.createObjectURL(blob);
-                enableDownload(url);
-                downloadBlobUrl(url, 'stream_of_waves.webm'); // auto
-                setStatus('Saved. Use “Download Last Recording” if needed.');
-              } finally {
-                recorder = null; btnRec.textContent = 'Start Recording';
-              }
-            };
-            recorder.start(1000); // timeslice for steady chunks
-            setStatus('Recording…'); btnRec.textContent = 'Stop Recording';
+            startRecorder();
           } else {
             try { recorder.requestData(); } catch(e){}
-            setTimeout(()=>{ recorder.stop(); }, 150);
+            setTimeout(()=>{ try{ recorder.stop(); }catch(e){} }, 150);
             setStatus('Finalizing…');
           }
         } catch (err) {
@@ -232,6 +287,24 @@
           setStatus('Could not start recorder (see console).');
           recorder = null; btnRec.textContent = 'Start Recording';
         }
+      };
+
+      // Test 5-second recording
+      testBtn.onclick = async () => {
+        if (recorder) return;
+        if (!startRecorder()) return;
+        await new Promise(r => setTimeout(r, 5200));
+        try { recorder.requestData(); } catch(e){}
+        setTimeout(()=>{ try{ recorder.stop(); }catch(e){} }, 150);
+        setStatus('Finalizing test…');
+      };
+
+      // Force finalize (if onstop didn’t fire)
+      forceBtn.onclick = () => {
+        if (!recorder) { setStatus('Nothing to finalize.'); return; }
+        try { recorder.requestData(); } catch(e){}
+        try { recorder.stop(); } catch(e){}
+        setStatus('Forcing finalize…');
       };
 
       // Animate
@@ -256,3 +329,4 @@
   </script>
 </body>
 </html>
+

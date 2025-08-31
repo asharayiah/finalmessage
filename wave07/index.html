@@ -19,15 +19,17 @@
   figure.video video{max-width:100%;height:auto;display:block;border-radius:12px}
   figure.video figcaption{color:var(--muted);font-size:.9rem;margin-top:.5rem}
 
-  /* UI must sit ABOVE the canvas */
-  .ui{position:fixed;top:12px;right:12px;display:flex;flex-direction:column;gap:8px;
-      background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--border);
-      padding:12px 14px;border-radius:12px;z-index:9999}
+  /* UI above canvas */
+  .ui{
+    position:fixed; top:12px; right:12px; display:flex; flex-direction:column; gap:8px;
+    background:var(--panel); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    border:1px solid var(--border); padding:12px 14px; border-radius:12px; z-index:9999
+  }
   .ui label{font-size:12px;opacity:.9}
   .ui button,.ui input[type="range"],.ui input[type="checkbox"]{width:260px}
   .credit{position:fixed;left:12px;bottom:10px;font-size:12px;color:var(--muted);opacity:.9;z-index:9999}
 
-  /* Keep the canvas BEHIND overlays so clicks work */
+  /* Canvas behind overlays so clicks work */
   canvas{display:block;width:100%;height:100%;position:fixed;inset:0;z-index:0}
 
   .notice{margin-top:10px;color:#c8cccf;font-size:.9rem;opacity:.9}
@@ -68,9 +70,8 @@
     <section id="panel-video" class="panel" role="tabpanel" aria-hidden="true">
       <figure class="video">
         <video controls preload="metadata" poster="../assets/cmb/poster_1920.jpg" width="960">
-          <!-- Prefer your compressed WebM; fallback to compressed MP4 -->
-          <source src="../assets/cmb/cmb_movie_720_21mb.webm" type="video/webm">
-          <source src="../assets/cmb/cmb_movie_720_23p5mb.mp4" type="video/mp4">
+          <source src="../assets/cmb/cmb_movie.webm" type="video/webm">
+          <source src="../assets/cmb/cmb_movie_720_tight.mp4" type="video/mp4">
           <track kind="captions" srclang="en" src="../assets/cmb/en.srt" label="English" default>
           Sorry, your browser doesn’t support embedded videos.
         </video>
@@ -104,6 +105,7 @@
     async function bootStream(){
       if(window.__CMB_STREAM_BOOTED__) return; window.__CMB_STREAM_BOOTED__=true;
 
+      // Use CDN URL imports (avoids bare module specifier errors)
       const THREE = await import('https://unpkg.com/three@0.161.0/build/three.module.js');
       const { OrbitControls } = await import('https://unpkg.com/three@0.161.0/examples/jsm/controls/OrbitControls.js');
 
@@ -111,9 +113,7 @@
       const renderer=new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
       renderer.setSize(W,H); renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
       // Ensure canvas sits behind UI so clicks work
-      renderer.domElement.style.position='fixed';
-      renderer.domElement.style.inset='0';
-      renderer.domElement.style.zIndex='0';
+      Object.assign(renderer.domElement.style,{position:'fixed',inset:'0',zIndex:'0'});
       document.body.appendChild(renderer.domElement);
 
       const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b0d11);
@@ -136,6 +136,7 @@
 
       // CMB on inside of sphere (flip horizontally for inside view)
       const texLoader=new THREE.TextureLoader();
+      texLoader.setCrossOrigin('anonymous'); // safe even if same-origin
       texLoader.load(cmbPath,(tex)=>{
         tex.wrapS = THREE.RepeatWrapping; tex.repeat.x = -1; tex.offset.x = 1;
         tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -189,7 +190,7 @@
       }
       buildStars();
 
-      // ---- Robust Recorder (diagnostic + test) ----
+      // ---- Recorder (diagnostics + Safari-aware) ----
       const $ = s=>document.querySelector(s);
       const btnRec = $('#btnRecord'), btnDL = $('#btnDownload'), recStatus = $('#recStatus');
       const testBtn = $('#btnTest5'), forceBtn = $('#btnForce');
@@ -197,24 +198,39 @@
 
       let recorder = null, chunks = [], lastBlobUrl = null, lastMime = null, bytes = 0, chunkCount = 0;
 
+      function isSafari(){
+        const ua = navigator.userAgent;
+        const is_safari = /^((?!chrome|android).)*safari/i.test(ua);
+        const is_ios = /iPad|iPhone|iPod/.test(ua);
+        return is_safari || is_ios;
+      }
+
       function pickMime(){
-        const candidates = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+        const mp4s = ['video/mp4;codecs="h264,aac"','video/mp4'];
+        const webms = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+        const candidates = isSafari() ? [...mp4s, ...webms] : [...webms, ...mp4s];
         for (const m of candidates){ if (window.MediaRecorder?.isTypeSupported?.(m)) return m; }
         return '';
       }
+
       function humanBytes(n){ if(!n) return '0 B'; const u=['B','KB','MB','GB']; let i=0; while(n>=1024&&i<u.length-1){n/=1024;i++;} return n.toFixed(1)+' '+u[i]; }
       function setStatus(t){ recStatus.textContent = t; }
       function enableDownload(url){
         lastBlobUrl = url; btnDL.disabled = false;
-        btnDL.onclick = () => { const a = Object.assign(document.createElement('a'), { href: url, download: 'stream_of_waves.webm' }); document.body.appendChild(a); a.click(); a.remove(); };
+        btnDL.onclick = () => {
+          const ext = (lastMime && lastMime.startsWith('video/mp4')) ? 'mp4' : 'webm';
+          const a = Object.assign(document.createElement('a'), { href: url, download: `stream_of_waves.${ext}` });
+          document.body.appendChild(a); a.click(); a.remove();
+        };
       }
 
       function startRecorder(){
         if (!canvas.captureStream) { setStatus('captureStream unsupported. Use Chrome/Edge via HTTPS/HTTP.'); alert('Use Chrome/Edge and open via https:// or http://localhost'); return false; }
         const stream = canvas.captureStream(30);
-        const mime = pickMime(); if(!mime){ setStatus('No WebM codec supported.'); alert('No supported WebM codec. Try Chrome/Edge.'); return false; }
+        const mime = pickMime(); if(!mime){ setStatus('No supported codec for MediaRecorder.'); alert('No supported codec. Try Chrome/Edge.'); return false; }
         lastMime = mime; chunks = []; bytes = 0; chunkCount = 0;
 
+        // ~1.4 Mbps video keeps files small for GitHub Pages
         recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1_400_000 });
         recorder.ondataavailable = e => { if (e.data && e.data.size) { chunks.push(e.data); bytes += e.data.size; chunkCount++; setStatus(`Recording… chunks=${chunkCount}, ${humanBytes(bytes)}`); } };
         recorder.onerror = e => { console.error(e); setStatus('Recorder error (see console).'); };
@@ -223,7 +239,9 @@
             const blob = new Blob(chunks, { type: lastMime || 'video/webm' });
             if (!blob.size) { setStatus('No data captured. Try Test 5s.'); return; }
             const url = URL.createObjectURL(blob); enableDownload(url);
-            const a = Object.assign(document.createElement('a'), { href: url, download: 'stream_of_waves.webm' }); document.body.appendChild(a); a.click(); a.remove();
+            const ext = (lastMime && lastMime.startsWith('video/mp4')) ? 'mp4' : 'webm';
+            const a = Object.assign(document.createElement('a'), { href: url, download: `stream_of_waves.${ext}` });
+            document.body.appendChild(a); a.click(); a.remove();
             setStatus(`Saved ${humanBytes(blob.size)}. Use Download Last Recording if needed.`);
           } finally { recorder = null; btnRec.textContent = 'Start Recording'; }
         };
@@ -245,7 +263,18 @@
         } catch (err) { console.error(err); setStatus('Could not start recorder (see console).'); recorder = null; btnRec.textContent='Start Recording'; }
       };
 
-      testBtn.onclick = async () => {
+      document.getElementById('btnWaves').onclick = () => {
+        running = !running;
+        document.getElementById('btnWaves').textContent = running ? 'Pause Waves' : 'Resume Waves';
+      };
+
+      document.getElementById('speed').oninput=e=>{ waveSpeed=parseFloat(e.target.value); waveGroup.children.forEach(m=>m.material.uniforms.uSpeed.value=waveSpeed); };
+      document.getElementById('bright').oninput=e=>{ brightness=parseFloat(e.target.value); waveGroup.children.forEach(m=>m.material.uniforms.uBrightness.value=brightness); };
+      document.getElementById('count').oninput=e=>{ waveCount=parseInt(e.target.value,10); buildWaves(); };
+      document.getElementById('starsToggle').onchange=e=>{ starsVisible=e.target.checked; if(stars) stars.visible=starsVisible; };
+      document.getElementById('starCount').oninput=e=>{ starCount=parseInt(e.target.value,10); buildStars(); };
+
+      document.getElementById('btnTest5').onclick = async () => {
         if (recorder) return;
         if (!startRecorder()) return;
         await new Promise(r => setTimeout(r, 5200));
@@ -254,7 +283,7 @@
         setStatus('Finalizing test…');
       };
 
-      forceBtn.onclick = () => {
+      document.getElementById('btnForce').onclick = () => {
         if (!recorder) { setStatus('Nothing to finalize.'); return; }
         try { recorder.requestData(); } catch(e){}
         try { recorder.stop(); } catch(e){}

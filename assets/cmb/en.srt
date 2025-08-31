@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:06,000
+This animation shows ESA’s Planck spacecraft mapping the entire sky at microwave wavelengths.
+
+2
+00:00:06,000 --> 00:00:12,000
+By scanning from the second Lagrange point, Planck measured tiny temperature ripples in the cosmic microwave background.
+
+3
+00:00:12,000 --> 00:00:18,000
+These ripples, only tens to hundreds of microkelvin, trace density variations in the early Universe.
+
+4
+00:00:18,000 --> 00:00:25,000
+After component separation, foregrounds like dust and synchrotron are removed to reveal the CMB signal.
+
+5
+00:00:25,000 --> 00:00:31,000
+One widely used reconstruction is SMICA, a method that combines Planck’s frequency maps into a clean CMB map.
+
+6
+00:00:31,000 --> 00:00:38,000
+The Galactic plane is masked in some visualisations to highlight high-latitude CMB anisotropies.
+
+7
+00:00:38,000 --> 00:00:46,000
+The resulting all-sky map encodes the initial conditions that grew into today’s galaxies and clusters.
+
+8
+00:00:46,000 --> 00:00:54,000
+From this map, scientists derive angular power spectra that constrain the contents and geometry of the Universe.
+
+9
+00:00:54,000 --> 00:01:02,000
+Planck’s 2018 data release remains a key reference for temperature and polarization measurements of the CMB.
+
+10
+00:01:02,000 --> 00:01:10,000
+Learn more in the Planck Legacy Archive and ESA resources linked on this page.

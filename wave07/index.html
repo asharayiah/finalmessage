@@ -50,7 +50,7 @@
         <button id="btnRecord">Start Recording</button>
         <small id="recStatus">Ready</small>
         <button id="btnDownload" disabled>Download Last Recording</button>
-        <small style="opacity:.75;display:block;margin-top:4px">If nothing downloads, try Edge/Chrome, or serve via HTTP.</small>
+        <small style="opacity:.75;display:block;margin-top:4px">If nothing downloads, try Chrome/Edge, or serve via HTTP.</small>
       </div>
       <div class="credit">CMB texture: ESA / Planck Collaboration (equirectangular). Concept demo — not a literal time series.</div>
     </section>
@@ -59,19 +59,14 @@
     <section id="panel-video" class="panel" role="tabpanel" aria-hidden="true">
       <figure class="video">
         <video controls preload="metadata" poster="../assets/cmb/poster_1920.jpg" width="960">
-          <!-- Your custom clip will be preferred if present -->
-          <source src="../assets/cmb/stream_of_waves.webm" type="video/webm">
-          <!-- ESA fallback -->
-          <source src="../assets/cmb/cmb_movie.mp4" type="video/mp4">
+          <source src="../assets/cmb/cmb_movie.webm" type="video/webm">
+          <source src="../assets/cmb/cmb_movie_720_tight.mp4" type="video/mp4">
           <track kind="captions" srclang="en" src="../assets/cmb/en.srt" label="English" default>
           Sorry, your browser doesn’t support embedded videos.
         </video>
         <figcaption>Planck’s view of the CMB — <small>ESA / Planck Collaboration</small></figcaption>
       </figure>
-      <p class="notice">
-        Once you record your custom stream (WebM), the player above will use it automatically (with MP4 as fallback).
-      </p>
-      <p><a href="../assets/cmb/cmb_movie.mp4">Test: open the ESA MP4 directly</a></p>
+      <p class="notice">Once you record your custom stream (WebM), you can also point the player above to it.</p>
     </section>
   </main>
 
@@ -83,7 +78,6 @@
     const tabStream = document.getElementById('tab-stream');
     const panelVideo  = document.getElementById('panel-video');
     const panelStream = document.getElementById('panel-stream');
-
     function selectTab(which){
       const isStream = which === 'stream';
       tabStream.setAttribute('aria-selected', String(isStream));
@@ -138,7 +132,7 @@
 
       // Wavefront shells (concept stream)
       const waveGroup=new THREE.Group(); scene.add(waveGroup);
-      let waveCount=14, waveSpeed=0.6, brightness=0.5;
+      let waveCount=14, waveSpeed=0.6, brightness=0.5, running=true;
       const baseGeo=new THREE.SphereGeometry(1.6,96,48);
       function buildWaves(){
         waveGroup.clear();
@@ -181,114 +175,84 @@
       }
       buildStars();
 
-    // ---- Robust Recorder ----
-    const $ = s=>document.querySelector(s);
-    const btnRec = $('#btnRecord'), btnDL = $('#btnDownload'), recStatus = $('#recStatus');
-    const canvas = renderer.domElement;
+      // UI
+      const $ = s=>document.querySelector(s);
+      function setRun(b){ running=b; $('#btnWaves').textContent=b?'Pause Waves':'Resume Waves'; }
+      $('#btnWaves').onclick=()=>setRun(!running);
+      $('#speed').oninput=e=>{ waveSpeed=parseFloat(e.target.value); waveGroup.children.forEach(m=>m.material.uniforms.uSpeed.value=waveSpeed); };
+      $('#bright').oninput=e=>{ brightness=parseFloat(e.target.value); waveGroup.children.forEach(m=>m.material.uniforms.uBrightness.value=brightness); };
+      $('#count').oninput=e=>{ waveCount=parseInt(e.target.value,10); buildWaves(); };
+      $('#starsToggle').onchange=e=>{ starsVisible=e.target.checked; if(stars) stars.visible=starsVisible; };
+      $('#starCount').oninput=e=>{ starCount=parseInt(e.target.value,10); buildStars(); };
 
-    let recorder = null, chunks = [], lastBlobUrl = null, lastMime = null;
+      // ---- Robust Recorder ----
+      const btnRec = $('#btnRecord'), btnDL = $('#btnDownload'), recStatus = $('#recStatus');
+      const canvas = renderer.domElement;
+      let recorder = null, chunks = [], lastBlobUrl = null, lastMime = null;
 
-    function pickMime(){
-      const candidates = [
-        'video/webm;codecs=vp9',
-        'video/webm;codecs=vp8',
-        'video/webm'
-      ];
-      for (const m of candidates){
-        if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m;
+      function pickMime(){
+        const c = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+        for (const m of c){ if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m; }
+        return '';
       }
-      return ''; // unsupported
-    }
+      function downloadBlobUrl(url,name){ const a=Object.assign(document.createElement('a'),{href:url,download:name}); document.body.appendChild(a); a.click(); a.remove(); }
+      function setStatus(t){ recStatus.textContent=t; }
+      function enableDownload(url){ lastBlobUrl=url; btnDL.disabled=false; btnDL.onclick=()=>downloadBlobUrl(lastBlobUrl,'stream_of_waves.webm'); }
 
-    function downloadBlobUrl(url, name){
-      const a = Object.assign(document.createElement('a'), { href: url, download: name });
-      document.body.appendChild(a); a.click(); a.remove();
-    }
-
-    function setStatus(txt){ recStatus.textContent = txt; }
-
-    function enableDownload(url){
-      lastBlobUrl = url;
-      btnDL.disabled = false;
-      btnDL.onclick = () => {
-        downloadBlobUrl(lastBlobUrl, 'stream_of_waves.webm');
-      };
-    }
-
-    btnRec.onclick = () => {
-      try {
-        if (!recorder) {
-          if (!canvas.captureStream) {
-            setStatus('Recording not supported here. Try Chrome/Edge, or run a local server (see note).');
-            alert('Your browser/page mode may block canvas capture.\nUse Chrome/Edge and open via http://localhost/.');
-            return;
+      btnRec.onclick = () => {
+        try {
+          if (!recorder) {
+            if (!canvas.captureStream) { setStatus('Recording not supported here. Use Chrome/Edge or HTTP.'); alert('Use Chrome/Edge and open via http://localhost/.'); return; }
+            const stream = canvas.captureStream(30);
+            const mime = pickMime(); if(!mime){ setStatus('No WebM codec supported. Try Chrome/Edge.'); alert('No supported WebM codec.'); return; }
+            lastMime = mime; chunks = [];
+            recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1_400_000 }); // ~<25MB for ~2–3 min
+            recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+            recorder.onerror = e => { console.error(e); setStatus('Recorder error (see console)'); };
+            recorder.onstop = () => {
+              try {
+                const blob = new Blob(chunks, { type: lastMime || 'video/webm' });
+                const url  = URL.createObjectURL(blob);
+                enableDownload(url);
+                downloadBlobUrl(url, 'stream_of_waves.webm'); // auto
+                setStatus('Saved. Use “Download Last Recording” if needed.');
+              } finally {
+                recorder = null; btnRec.textContent = 'Start Recording';
+              }
+            };
+            recorder.start(1000); // timeslice for steady chunks
+            setStatus('Recording…'); btnRec.textContent = 'Stop Recording';
+          } else {
+            try { recorder.requestData(); } catch(e){}
+            setTimeout(()=>{ recorder.stop(); }, 150);
+            setStatus('Finalizing…');
           }
-          const stream = canvas.captureStream(30);
-          const mime = pickMime();
-          if (!mime) {
-            setStatus('No WebM codec supported. Try Chrome/Edge on Windows.');
-            alert('No supported WebM codec. Try Chrome/Edge.');
-            return;
-          }
-          lastMime = mime;
-          chunks = [];
-          recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6_000_000 });
-
-          recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-          recorder.onerror = e => { console.error(e); setStatus('Recorder error (see console)'); };
-
-          recorder.onstop = () => {
-            try {
-              const blob = new Blob(chunks, { type: lastMime || 'video/webm' });
-              const url  = URL.createObjectURL(blob);
-              enableDownload(url);
-              // Try auto-download once; button remains for manual
-              downloadBlobUrl(url, 'stream_of_waves.webm');
-              setStatus('Saved. Use “Download Last Recording” if needed.');
-            } finally {
-              recorder = null;
-              btnRec.textContent = 'Start Recording';
-            }
-          };
-
-          // Start with timeslice so chunks roll in even on long sessions
-          recorder.start(1000);
-          setStatus('Recording… (chunks every ~1s)');
-          btnRec.textContent = 'Stop Recording';
-        } else {
-          // Flush a final chunk first (helps some browsers)
-          try { recorder.requestData(); } catch(e){}
-          setTimeout(()=>{ recorder.stop(); }, 150);
-          setStatus('Finalizing…');
+        } catch (err) {
+          console.error(err);
+          setStatus('Could not start recorder (see console).');
+          recorder = null; btnRec.textContent = 'Start Recording';
         }
-      } catch (err) {
-        console.error(err);
-        setStatus('Could not start recorder (see console).');
-        recorder = null;
-        btnRec.textContent = 'Start Recording';
-      }
-    };
+      };
 
-    // Animate
-    const t0 = performance.now();
-    function tick(now){
+      // Animate
+      const t0 = performance.now();
+      function tick(now){
+        requestAnimationFrame(tick);
+        const t=(now - t0)/1000;
+        if(running){
+          waveGroup.children.forEach((m,i)=>{ m.material.uniforms.uTime.value=t+i*0.45; });
+          if(stars){ stars.material.uniforms.uTime.value=t; }
+        }
+        controls.update(); renderer.render(scene,camera);
+      }
       requestAnimationFrame(tick);
-      const t = (now - t0)/1000;
-      if(running){
-        waveGroup.children.forEach((m,i)=>{ m.material.uniforms.uTime.value = t + i*0.45; });
-        if(stars){ stars.material.uniforms.uTime.value = t; }
-      }
-      controls.update();
-      renderer.render(scene,camera);
-    }
-    requestAnimationFrame(tick);
 
-    // Resize
-    window.addEventListener('resize',()=>{
-      const w=window.innerWidth, h=window.innerHeight;
-      renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix();
-    });
-  } // end bootStream
+      // Resize
+      window.addEventListener('resize',()=>{
+        const w=window.innerWidth,h=window.innerHeight;
+        renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix();
+      });
+    }
   </script>
 </body>
 </html>

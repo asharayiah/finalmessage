@@ -82,6 +82,14 @@
 
   <footer>© FinalMessage</footer>
 
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+    "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.161.0/examples/jsm/controls/OrbitControls.js"
+  }
+}
+</script>
   <script type="module">
     // Tabs (Stream is default)
     const tabVideo  = document.getElementById('tab-video');
@@ -103,6 +111,9 @@
 
     // --- STREAM IMPLEMENTATION ---
     async function bootStream(){
+const THREE = await import('three');
+const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js');
+
       if(window.__CMB_STREAM_BOOTED__) return; window.__CMB_STREAM_BOOTED__=true;
 
       // Use CDN URL imports (avoids bare module specifier errors)
@@ -312,5 +323,6 @@
   </script>
 </body>
 </html>
+
 
 

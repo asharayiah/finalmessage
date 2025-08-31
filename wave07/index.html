@@ -18,13 +18,20 @@
   figure.video{margin:0}
   figure.video video{max-width:100%;height:auto;display:block;border-radius:12px}
   figure.video figcaption{color:var(--muted);font-size:.9rem;margin-top:.5rem}
-  .ui{position:fixed;top:12px;right:12px;display:flex;flex-direction:column;gap:8px;background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--border);padding:12px 14px;border-radius:12px;z-index:10}
+
+  /* UI must sit ABOVE the canvas */
+  .ui{position:fixed;top:12px;right:12px;display:flex;flex-direction:column;gap:8px;
+      background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--border);
+      padding:12px 14px;border-radius:12px;z-index:9999}
   .ui label{font-size:12px;opacity:.9}
   .ui button,.ui input[type="range"],.ui input[type="checkbox"]{width:260px}
-  .credit{position:fixed;left:12px;bottom:10px;font-size:12px;color:var(--muted);opacity:.9}
-  canvas{display:block;width:100%;height:100%}
+  .credit{position:fixed;left:12px;bottom:10px;font-size:12px;color:var(--muted);opacity:.9;z-index:9999}
+
+  /* Keep the canvas BEHIND overlays so clicks work */
+  canvas{display:block;width:100%;height:100%;position:fixed;inset:0;z-index:0}
+
   .notice{margin-top:10px;color:#c8cccf;font-size:.9rem;opacity:.9}
-  #recStatus{font-size:12px;opacity:.85}
+  #recStatus{font-size:12px;opacity:.9}
 </style>
 </head>
 <body>
@@ -50,7 +57,9 @@
         <button id="btnRecord">Start Recording</button>
         <small id="recStatus">Ready</small>
         <button id="btnDownload" disabled>Download Last Recording</button>
-        <small style="opacity:.75;display:block;margin-top:4px">If nothing downloads, try Chrome/Edge, or serve via HTTP.</small>
+        <button id="btnTest5">Test 5s Recording</button>
+        <button id="btnForce">Force Finalize</button>
+        <small style="opacity:.75;display:block;margin-top:4px">If nothing downloads, use Chrome/Edge and open via HTTPS/HTTP (GitHub Pages or localhost).</small>
       </div>
       <div class="credit">CMB texture: ESA / Planck Collaboration (equirectangular). Concept demo — not a literal time series.</div>
     </section>
@@ -59,14 +68,14 @@
     <section id="panel-video" class="panel" role="tabpanel" aria-hidden="true">
       <figure class="video">
         <video controls preload="metadata" poster="../assets/cmb/poster_1920.jpg" width="960">
-          <source src="../assets/cmb/cmb_movie.webm" type="video/webm">
-          <source src="../assets/cmb/cmb_movie_720_tight.mp4" type="video/mp4">
+          <!-- Prefer your compressed WebM; fallback to compressed MP4 -->
+          <source src="../assets/cmb/cmb_movie_720_21mb.webm" type="video/webm">
+          <source src="../assets/cmb/cmb_movie_720_23p5mb.mp4" type="video/mp4">
           <track kind="captions" srclang="en" src="../assets/cmb/en.srt" label="English" default>
           Sorry, your browser doesn’t support embedded videos.
         </video>
         <figcaption>Planck’s view of the CMB — <small>ESA / Planck Collaboration</small></figcaption>
       </figure>
-      <p class="notice">Once you record your custom stream (WebM), you can also point the player above to it.</p>
     </section>
   </main>
 
@@ -78,6 +87,7 @@
     const tabStream = document.getElementById('tab-stream');
     const panelVideo  = document.getElementById('panel-video');
     const panelStream = document.getElementById('panel-stream');
+
     function selectTab(which){
       const isStream = which === 'stream';
       tabStream.setAttribute('aria-selected', String(isStream));
@@ -100,6 +110,10 @@
       const W=window.innerWidth,H=window.innerHeight;
       const renderer=new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
       renderer.setSize(W,H); renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+      // Ensure canvas sits behind UI so clicks work
+      renderer.domElement.style.position='fixed';
+      renderer.domElement.style.inset='0';
+      renderer.domElement.style.zIndex='0';
       document.body.appendChild(renderer.domElement);
 
       const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b0d11);
@@ -175,104 +189,50 @@
       }
       buildStars();
 
-      // UI
-      const $ = s=>document.querySelector(s);
-      function setRun(b){ running=b; $('#btnWaves').textContent=b?'Pause Waves':'Resume Waves'; }
-      $('#btnWaves').onclick=()=>setRun(!running);
-      $('#speed').oninput=e=>{ waveSpeed=parseFloat(e.target.value); waveGroup.children.forEach(m=>m.material.uniforms.uSpeed.value=waveSpeed); };
-      $('#bright').oninput=e=>{ brightness=parseFloat(e.target.value); waveGroup.children.forEach(m=>m.material.uniforms.uBrightness.value=brightness); };
-      $('#count').oninput=e=>{ waveCount=parseInt(e.target.value,10); buildWaves(); };
-      $('#starsToggle').onchange=e=>{ starsVisible=e.target.checked; if(stars) stars.visible=starsVisible; };
-      $('#starCount').oninput=e=>{ starCount=parseInt(e.target.value,10); buildStars(); };
-
-      // ---- Robust Recorder ----
       // ---- Robust Recorder (diagnostic + test) ----
       const $ = s=>document.querySelector(s);
       const btnRec = $('#btnRecord'), btnDL = $('#btnDownload'), recStatus = $('#recStatus');
+      const testBtn = $('#btnTest5'), forceBtn = $('#btnForce');
       const canvas = renderer.domElement;
-
-      // Add two helper buttons in the UI panel
-      const testBtn = document.createElement('button'); testBtn.id='btnTest5'; testBtn.textContent='Test 5s Recording';
-      const forceBtn = document.createElement('button'); forceBtn.id='btnForce'; forceBtn.textContent='Force Finalize';
-      document.getElementById('ui').appendChild(testBtn);
-      document.getElementById('ui').appendChild(forceBtn);
 
       let recorder = null, chunks = [], lastBlobUrl = null, lastMime = null, bytes = 0, chunkCount = 0;
 
       function pickMime(){
-        const candidates = [
-          'video/webm;codecs=vp9', // try vp9 first
-          'video/webm;codecs=vp8',
-          'video/webm'
-        ];
-        for (const m of candidates){
-          if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m;
-        }
+        const candidates = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+        for (const m of candidates){ if (window.MediaRecorder?.isTypeSupported?.(m)) return m; }
         return '';
       }
-      function humanBytes(n){ if(!n) return '0 B'; const u=['B','KB','MB','GB']; let i=0; while(n>=1024 && i<u.length-1){ n/=1024;i++; } return n.toFixed(1)+' '+u[i]; }
+      function humanBytes(n){ if(!n) return '0 B'; const u=['B','KB','MB','GB']; let i=0; while(n>=1024&&i<u.length-1){n/=1024;i++;} return n.toFixed(1)+' '+u[i]; }
       function setStatus(t){ recStatus.textContent = t; }
       function enableDownload(url){
-        lastBlobUrl = url;
-        btnDL.disabled = false;
-        btnDL.onclick = () => {
-          const a = Object.assign(document.createElement('a'), { href: url, download: 'stream_of_waves.webm' });
-          document.body.appendChild(a); a.click(); a.remove();
-        };
+        lastBlobUrl = url; btnDL.disabled = false;
+        btnDL.onclick = () => { const a = Object.assign(document.createElement('a'), { href: url, download: 'stream_of_waves.webm' }); document.body.appendChild(a); a.click(); a.remove(); };
       }
 
       function startRecorder(){
-        if (!canvas.captureStream) {
-          setStatus('captureStream unsupported (use Chrome/Edge, open via HTTP).');
-          alert('Your browser/page mode may block canvas capture.\nUse Chrome/Edge and open via http://localhost/ or GitHub Pages.');
-          return false;
-        }
+        if (!canvas.captureStream) { setStatus('captureStream unsupported. Use Chrome/Edge via HTTPS/HTTP.'); alert('Use Chrome/Edge and open via https:// or http://localhost'); return false; }
         const stream = canvas.captureStream(30);
-        const mime = pickMime();
-        if (!mime) {
-          setStatus('No WebM codec supported (Safari?).');
-          alert('No supported WebM codec. Try Chrome/Edge on Windows.');
-          return false;
-        }
-        lastMime = mime;
-        chunks = []; bytes = 0; chunkCount = 0;
-        // 1.2–1.5 Mbps keeps files small for GitHub Pages
+        const mime = pickMime(); if(!mime){ setStatus('No WebM codec supported.'); alert('No supported WebM codec. Try Chrome/Edge.'); return false; }
+        lastMime = mime; chunks = []; bytes = 0; chunkCount = 0;
+
         recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1_400_000 });
-
-        recorder.ondataavailable = e => {
-          if (e.data && e.data.size) {
-            chunks.push(e.data);
-            bytes += e.data.size;
-            chunkCount++;
-            setStatus(`Recording… chunks=${chunkCount}, ${humanBytes(bytes)}`);
-          }
-        };
+        recorder.ondataavailable = e => { if (e.data && e.data.size) { chunks.push(e.data); bytes += e.data.size; chunkCount++; setStatus(`Recording… chunks=${chunkCount}, ${humanBytes(bytes)}`); } };
         recorder.onerror = e => { console.error(e); setStatus('Recorder error (see console).'); };
-
         recorder.onstop = () => {
           try {
             const blob = new Blob(chunks, { type: lastMime || 'video/webm' });
-            if (!blob.size) { setStatus('No data captured. Try “Test 5s Recording”.'); return; }
-            const url  = URL.createObjectURL(blob);
-            enableDownload(url);
-            // Auto-download once (some browsers may block popups)
-            const a = Object.assign(document.createElement('a'), { href: url, download: 'stream_of_waves.webm' });
-            document.body.appendChild(a); a.click(); a.remove();
-            setStatus(`Saved ${humanBytes(blob.size)}. Use “Download Last Recording” if needed.`);
-          } finally {
-            recorder = null;
-            btnRec.textContent = 'Start Recording';
-          }
+            if (!blob.size) { setStatus('No data captured. Try Test 5s.'); return; }
+            const url = URL.createObjectURL(blob); enableDownload(url);
+            const a = Object.assign(document.createElement('a'), { href: url, download: 'stream_of_waves.webm' }); document.body.appendChild(a); a.click(); a.remove();
+            setStatus(`Saved ${humanBytes(blob.size)}. Use Download Last Recording if needed.`);
+          } finally { recorder = null; btnRec.textContent = 'Start Recording'; }
         };
-
-        // Emit a chunk every second so we see progress
-        recorder.start(1000);
+        recorder.start(1000); // rolling chunks each second
         btnRec.textContent = 'Stop Recording';
         setStatus('Recording… chunks=0, 0 B');
         return true;
       }
 
-      // Start/Stop toggle
       btnRec.onclick = () => {
         try {
           if (!recorder) {
@@ -282,14 +242,9 @@
             setTimeout(()=>{ try{ recorder.stop(); }catch(e){} }, 150);
             setStatus('Finalizing…');
           }
-        } catch (err) {
-          console.error(err);
-          setStatus('Could not start recorder (see console).');
-          recorder = null; btnRec.textContent = 'Start Recording';
-        }
+        } catch (err) { console.error(err); setStatus('Could not start recorder (see console).'); recorder = null; btnRec.textContent='Start Recording'; }
       };
 
-      // Test 5-second recording
       testBtn.onclick = async () => {
         if (recorder) return;
         if (!startRecorder()) return;
@@ -299,7 +254,6 @@
         setStatus('Finalizing test…');
       };
 
-      // Force finalize (if onstop didn’t fire)
       forceBtn.onclick = () => {
         if (!recorder) { setStatus('Nothing to finalize.'); return; }
         try { recorder.requestData(); } catch(e){}
@@ -329,4 +283,3 @@
   </script>
 </body>
 </html>
-

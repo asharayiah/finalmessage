@@ -1,0 +1,4 @@
+.brand-wrap{display:flex;align-items:center;gap:10px;padding:12px 0px;max-width:var(--maxw);margin:0 auto}
+.brand-link{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+.brand-logo{height:6em;width:auto;display:inline-block}
+.brand-title{font-size:3.8rem;font-weight:800;color:var(--fg);line-height:1}

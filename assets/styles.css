@@ -26,7 +26,7 @@ a{color:var(--fg);text-decoration:underline;text-underline-offset:3px}
 .hero-text .byline{margin-top:2px;opacity:.85;font-size:0.75em}
 .tabs{margin-top:8px}
 .tablist{display:flex;gap:8px;flex-wrap:wrap;list-style:none;margin:0;padding:0;border-bottom:0.5px solid var(--line)}
-.tablist button{font-size:0.6em;background:transparent;border:0.5px solid var(--fg);color:var(--fg);padding:4px 8px;border-radius:10px 10px 0 0;cursor:pointer;font-weight:700;transition:all .2s}
+.tablist button{font-size:1.0em;background:transparent;border:0.5px solid var(--fg);color:var(--fg);padding:4px 8px;border-radius:10px 10px 0 0;cursor:pointer;font-weight:700;transition:all .2s}
 .tablist button[aria-selected="true"]{background:var(--fg);color:#000}
 .tabpanel{display:none;padding:10px 0}
 .tabpanel.active{display:block}

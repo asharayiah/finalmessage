@@ -13,6 +13,7 @@ a{color:var(--fg);text-decoration:underline;text-underline-offset:3px}
 [dir="rtl"] .brand-wrap{flex-direction:row-reverse}
 [dir="rtl"] .brand-link{flex-direction:row-reverse}
 [dir="rtl"] .brand-title{direction:rtl}
+.family-wrap{display:flex;align-items:center;gap:10px;padding:12px 20px;height:40em;width:auto;max-width:var(--maxw);margin:0 auto}
 .lang-nav{width:100%; margin:8px 0 2px; text-align:center}
 .lang-nav ul{display:flex;justify-content:center;gap:6px;list-style:none;margin:0;padding:0;flex-wrap:wrap}
 .lang-nav a{color:var(--fg);text-decoration:none;border:0.5px solid var(--fg);padding:4px 8px;border-radius:10px;font-weight:700;font-size:0.9em}

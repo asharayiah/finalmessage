@@ -1,24 +1,36 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Last War — Home</title>
-<link rel="canonical" href="https://finalmessage.info/">
-<meta name="description" content="A human-first message against deception and war. Read, verify, and share.">
-<meta property="og:title" content="The Last War — A Human-First Message">
-<meta property="og:description" content="Read, verify, and share.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://finalmessage.info/">
-<meta property="og:image" content="https://finalmessage.info/assets/og/og_default.png">
-<meta name="twitter:card" content="summary_large_image">
+<title>The Last War — Read</title>
+<link rel="canonical" href="/last-war/">
+<meta name="description" content="Read the message in your language, verify, and share.">
+<meta property="og:title" content="The Last War — Read the Message">
+<meta property="og:description" content="Read, verify, share.">
+<meta property="og:type" content="article"><meta property="og:url" content="/last-war/">
+<meta property="og:image" content="/assets/og/og_lastwar.png">
 <link rel="stylesheet" href="/assets/app.css">
+<script defer src="/assets/i18n.js"></script>
 </head><body><div class="container">
-<div class="nav"><a class="brand" href="/">THE LAST WAR</a><a class="btn" href="/last-war/">Read the Message</a></div>
-<div class="hero card">
-  <h1>The Last War</h1>
-  <p class="muted">A concise, human-first appeal to end deception and prevent catastrophe. Compassion, truth-seeking, and responsibility—across borders.</p>
-  <div class="grid cols-2">
-    <div class="card"><h3>Read</h3><p>Open the message, choose a language, and verify with an open mind.</p><a class="btn" href="/last-war/">Open /last-war</a></div>
-    <div class="card"><h3>Share</h3><p>Use QR tiles or short links. Small actions compound when many people care.</p><a class="btn" href="/lw/en" rel="nofollow">Try /lw/en</a></div>
+  <div class="nav"><a class="brand" href="/">THE LAST WAR</a><a class="btn" id="shareBtn" href="#">Share</a></div>
+  <div class="card">
+    <h1>Read the message</h1>
+    <div class="grid cols-2">
+      <div>
+        <label for="langSel">Language</label>
+        <select id="langSel">
+          <option value="en">en</option><option value="ar">ar</option><option value="ru">ru</option>
+          <option value="zh">zh</option><option value="he">he</option><option value="es">es</option>
+          <option value="de">de</option><option value="fa">fa</option><option value="hi">hi</option>
+          <option value="ko">ko</option><option value="ja">ja</option><option value="sw">sw</option>
+          <option value="am">am</option><option value="ha">ha</option><option value="zu">zu</option>
+        </select>
+      </div>
+      <div><label for="city">City (optional, for share links)</label><input id="city" placeholder="amman / new-york / paris"></div>
+    </div>
+    <p class="muted">Tip: Select a language and (optionally) set a city to create a share link.</p>
   </div>
-</div>
-<footer><small class="muted">© 2025-09-14 The Last War</small></footer>
+  <div id="messageHost" class="card"><p class="muted">Loading…</p></div>
+  <div class="card"><h3>Share link</h3><div class="grid cols-2">
+    <div><code class="code" id="linkOut"></code></div><div style="text-align:right"><button class="btn" id="copyBtn">Copy</button></div>
+  </div><small class="muted">UTM tags included.</small></div>
+  <footer><small class="muted">© 2025-09-14 The Last War</small></footer>
 </div></body></html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not Found — The Last War</title>
+<link rel="stylesheet" href="/assets/app.css"></head>
+<body><div class="container">
+<div class="nav"><a class="brand" href="/">THE LAST WAR</a></div>
+<div class="card"><h1>404</h1><p class="muted">That page was not found.</p><a class="btn" href="/">Go Home</a></div>
+</div>
+<script>
+(function() {
+  var p = location.pathname;
+  if (p.startsWith('/lw')) {
+    var parts = p.replace(/^\/lw\/?/, '').split('/').filter(Boolean);
+    var lang = parts[0] || 'en';
+    var city = parts[1] || '';
+    var u = new URL(location.origin + '/last-war/');
+    u.searchParams.set('utm_source','qr');
+    u.searchParams.set('utm_medium','print');
+    u.searchParams.set('utm_campaign','the_last_war');
+    u.searchParams.set('utm_content', lang);
+    if (city) u.searchParams.set('utm_term', city);
+    location.replace(u.toString());
+  }
+})();
+</script>
+</body></html>

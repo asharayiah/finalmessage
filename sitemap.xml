@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://finalmessage.info/index.html</loc><lastmod>2025-09-03</lastmod></url>
-<url><loc>https://finalmessage.info/index-ar.html</loc><lastmod>2025-09-03</lastmod></url>
-<url><loc>https://finalmessage.info/index-he.html</loc><lastmod>2025-09-03</lastmod></url>
-<url><loc>https://finalmessage.info/index-es.html</loc><lastmod>2025-09-03</lastmod></url>
-<url><loc>https://finalmessage.info/index-de.html</loc><lastmod>2025-09-03</lastmod></url>
-<url><loc>https://finalmessage.info/index-ru.html</loc><lastmod>2025-09-03</lastmod></url>
-<url><loc>https://finalmessage.info/index-fa.html</loc><lastmod>2025-09-03</lastmod></url>
-<url><loc>https://finalmessage.info/index-hi.html</loc><lastmod>2025-09-03</lastmod></url>
-<url><loc>https://finalmessage.info/index-zh.html</loc><lastmod>2025-09-03</lastmod></url>
+  <url><loc>https://finalmessage.info/</loc></url>
+  <url><loc>https://finalmessage.info/last-war/</loc></url>
 </urlset>
